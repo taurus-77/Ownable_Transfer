@@ -9,22 +9,36 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 contract AWSTERC1155 is ERC1155, Ownable, Pausable {
     mapping(uint256 => string) private _tokenURIs;
     uint256 public currentTokenID;
-    mapping(uint256 => bool) isRevealed;
-    string public defaultURI;
 
-    constructor(address _newOwner)
+    // Token name
+    string private _name;
+
+    // Token symbol
+    string private _symbol;
+
+    
+    constructor(address _newOwner, string memory name_, string memory symbol_)
         ERC1155("https://gateway.pinata.cloud/ipfs/")
         Ownable(_newOwner)
     {
-        defaultURI = "https://gateway.pinata.cloud/ipfs/QmV9AMFXQXmLvdyKs2vsAwQB729cyPAFqe5ZZKE2FYi3EB";
+        _name = name_;
+        _symbol = symbol_;
+    }
+
+    function name() public view virtual returns (string memory) {
+        return _name;
+    }
+
+    function symbol() public view virtual returns (string memory) {
+        return _symbol;
+    }
+    
+    function totalSupply() public view virtual returns (uint256) {
+        return currentTokenID;
     }
 
     function uri(uint256 _id) public view override returns (string memory) {
-        if (isRevealed[_id]) {
-            return _tokenURIs[_id];
-        } else {
-            return defaultURI;
-        }
+        return _tokenURIs[_id];
     }
 
     function setURI(uint256 _tokenId, string memory _uri) public onlyOwner {
@@ -84,9 +98,6 @@ contract AWSTERC1155 is ERC1155, Ownable, Pausable {
         uint256 amount,
         bytes memory data
     ) public override {
-        if (!isRevealed[id]) {
-            isRevealed[id] = true;
-        }
         super.safeTransferFrom(from, to, id, amount, data);
     }
 
